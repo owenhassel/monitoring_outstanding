@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Monitoring Outstanding Tagihan – Jatuh Tempo Oktober 2026</title>
+<title>Monitoring Outstanding Tagihan</title>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f5f6f8;--card:#fff;--tx:#1b2430;--mu:#6b7686;--bd:#e1e5ec;--ac:#1f5fbf;--red:#c0392b;--redbg:#fdecea;--grn:#1e8449;--grnbg:#e6f4ec;--amb:#b9770e;--ambbg:#fdf3dc}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b222b;--tx:#e8ecf2;--mu:#93a0b2;--bd:#2c3644;--ac:#5b9bf0;--red:#ef7b6e;--redbg:#3a2220;--grn:#5fc88a;--grnbg:#1d3326;--amb:#e8b04a;--ambbg:#3a3019}}
@@ -39,8 +39,8 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:4px 10px;margin:10px 0;font-
 .note{font-size:12.5px;color:var(--mu);padding:8px 12px;background:var(--ambbg);border-radius:8px;margin-bottom:12px}
 .hist{font-size:12px;color:var(--mu);border-top:1px solid var(--bd);margin-top:12px;padding-top:8px}
 .clk{display:inline-block;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:600;margin-bottom:8px;font-variant-numeric:tabular-nums}.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.acts:empty{display:none}header{position:relative}</style></head><body>
-<header><div class="clk" id="clk"></div><h1>Monitoring Outstanding Tagihan <span class="badge b-amb" id="pb">Jatuh Tempo Oktober 2026</span></h1>
-<div class="sub" id="sub"></div><div class="acts" id="acts"></div><input type="file" id="fi" accept=".xlsx,.xls" hidden>
+<header><div class="clk" id="clk"></div><h1>Monitoring Outstanding Tagihan</h1>
+<div class="sub"><span class="badge b-amb" id="pb">Jatuh Tempo Oktober 2026</span> <span id="sub"></span></div><div class="acts" id="acts"></div><input type="file" id="fi" accept=".xlsx,.xls" hidden>
 <nav id="nav"></nav></header>
 <main><div id="fbar"></div><div id="msg"></div><div id="view"></div></main>
 <div class="modal" id="modal"><div class="box" id="box"></div></div>
@@ -215,7 +215,7 @@ function parseXlsx(buf){const wb=XLSX.read(buf,{type:'array',cellDates:true});
   const hi=A.findIndex(r=>r.some(c=>String(c).trim().toUpperCase()==='NO SPK'));if(hi<0)continue;
   const H=A[hi].map(c=>String(c).trim().toUpperCase().replace(/\s+/g,' ')),ix={};COLS.forEach(c=>ix[c]=H.indexOf(c));ix['STATUS TERBARU']=H.indexOf('STATUS TERBARU');
   const miss=COLS.filter(c=>ix[c]<0);if(miss.length)throw new Error('Kolom tidak ditemukan: '+miss.join(', '));
-  const hdr=A.slice(0,hi).flat().map(x=>String(x).trim()).filter(Boolean).join(' · ').slice(0,200),rows=[];
+  const hdr=A.slice(0,hi).flat().map(x=>String(x).trim()).filter(x=>x&&!/^tanggal/i.test(x)).join(' · ').slice(0,200),rows=[];
   A.slice(hi+1).forEach(a=>{const g=c=>a[ix[c]],spk=String(g('NO SPK')).trim();if(!spk||spk==='-')return;
    const baof=String(g('NO BERITA ACARA')).trim(),xs=ix['STATUS TERBARU']>=0?String(g('STATUS TERBARU')).trim():'';let nom=g('NOMINAL SPK');nom=typeof nom==='number'?nom:parseFloat(String(nom).replace(/[^\d.-]/g,''))||0;
    rows.push({spk,kt:String(g('KODE TOKO')).trim(),nt:String(g('NAMA TOKO')).trim(),jp:String(g('JENIS PROPOSAL')).replace('PEKERJAAN ','').toLowerCase().replace(/(^|\s)\S/g,c=>c.toUpperCase()),sp:String(g('NAMA SUPPLIER')).trim(),jt:String(g('JENIS TAGIHAN')).trim(),tjt:iso(g('TGL JATUH TEMPO')),ttfa:iso(g('TGL TTFA')),bbk:iso(g('TGL BBK')),baof:baof==='-'?'':baof,fa:iso(g('TGL FINAL APPROVE BA')),ss:String(g('STATUS SPK')).trim(),nom:Math.round(nom),inv:String(g('STATUS INVOICE')).trim(),xs:xs==='-'?'':xs})});
@@ -223,8 +223,8 @@ function parseXlsx(buf){const wb=XLSX.read(buf,{type:'array',cellDates:true});
  throw new Error('Header "NO SPK" tidak ditemukan. Gunakan format master yang sama seperti sebelumnya.')}
 function withIds(rows){const seen={};return rows.map(r=>{const b=r.spk+'-'+r.jt.replace(/ /g,'').replace(/%/g,'');seen[b]=(seen[b]||0)+1;return{...r,id:seen[b]===1?b:b+'-'+seen[b]}})}
 const pick=k=>withIds(PARSED.rows.filter(r=>r.tjt.slice(0,7)===k));
-function banner(){const m=META;$('#pb').textContent='Jatuh Tempo '+MON(m?m.period:'2026-10');document.title='Monitoring Outstanding Tagihan – Jatuh Tempo '+MON(m?m.period:'2026-10');
- $('#sub').textContent=m?`${m.hdr?m.hdr+' · ':''}Master: ${m.file} · diunggah oleh ${names[m.by]||'…'} · ${dtm(m.at)}`:'Cabang G156 – Klaten · Unit 03 PT. Indomarco Prismatama · Tanggal laporan 01/01/2026 s/d 13/10/2026 · Sumber: LAPORAN_MONITORING_OUTSTANDING_13102026.xlsx (data awal)'}
+function banner(){const m=META;$('#pb').textContent='Jatuh Tempo '+MON(m?m.period:'2026-10');document.title='Monitoring Outstanding Tagihan';
+ $('#sub').textContent=m?`${m.hdr?m.hdr.split(' · ').filter(x=>!/^tanggal/i.test(x)).join(' · ')+' · ':''}Sumber: ${m.file} · diunggah oleh ${names[m.by]||'…'} · ${dtm(m.at)}`:'Cabang G156 – Klaten · Unit 03 PT. Indomarco Prismatama · Sumber: LAPORAN_MONITORING_OUTSTANDING_13102026.xlsx (data awal)'}
 function acts(){$('#acts').innerHTML=(dl?`<button class="btn" onclick="exportXlsx()">⬇ Download Excel (status terbaru + rekap)</button>`:'')+(isAdmin&&db?`<button class="btn ghost" onclick="document.getElementById('fi').click()">⬆ Upload Master Baru</button>`:'')}
 $('#fi').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
  try{const P=parseXlsx(await f.arrayBuffer());P.file=f.name;const cnt={};P.rows.forEach(r=>{const k=r.tjt.slice(0,7);if(k)cnt[k]=(cnt[k]||0)+1});
